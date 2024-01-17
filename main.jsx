@@ -1,25 +1,26 @@
 import React from './core/React.js'
 import ReactDom from './core/ReactDom.js'
-// import App from './App.jsx'
 
-function handleClick() {
-  console.log('click')
-}
-
+let count = 0
 function Counter({ num }) {
+  function handleClick() {
+    console.log('click')
+    count++
+    React.update()
+  }
+
   return (
     <div>
-      <div >Counter😁 {num}</div>
+      Counter😁 {count}
       <button onClick={handleClick}>Click me😋</button>
     </div>
-
   )
 }
 
 const App = (
   <div>
     <div>Hello World🏅</div>
-    <Counter num={1} />
+    <Counter num={count} />
   </div>
 )
 
