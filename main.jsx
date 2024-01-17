@@ -2,9 +2,17 @@ import React from './core/React.js'
 import ReactDom from './core/ReactDom.js'
 // import App from './App.jsx'
 
+function handleClick() {
+  console.log('click')
+}
+
 function Counter({ num }) {
   return (
-    <div>Counter😁 {num}</div>
+    <div>
+      <div >Counter😁 {num}</div>
+      <button onClick={handleClick}>Click me😋</button>
+    </div>
+
   )
 }
 

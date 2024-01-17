@@ -40,6 +40,10 @@ function addProps(dom, props) {
     Object.keys(props)
         .filter(isProperty)
         .forEach(name => {
+            if (name.startsWith('on')) {
+                const eventType = name.toLowerCase().substring(2)
+                dom.addEventListener(eventType, props[name])
+            }
             dom[name] = props[name]
         })
 }
