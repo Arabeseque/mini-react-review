@@ -1,35 +1,39 @@
 import React from './core/React.js'
 import ReactDom from './core/ReactDom.js'
 
-let showBar = false
-function Counter() {
-  const Foo = (
-    <div>
-      <div>Foo</div>
-      <div>child1</div>
-      <div>child2</div>
-    </div>
-  )
-  const Bar = <div>Bar</div>
+
+let countFoo = 0
+function Foo() {
+  const update = React.update()
 
   function handleClick() {
-    showBar = !showBar
-    React.update()
+    countFoo++
+    console.log('clickFoo')
+    update()
   }
 
-  return (
-    <div>
-      <div>header</div>
-      {showBar && Bar}
-      <button onClick={handleClick}>Click me😋</button>
-    </div>
-  )
+  return <div onClick={handleClick}>Foo {countFoo}</div>
 }
+
+let countBar = 0
+function Bar() {
+  const update = React.update()
+
+  function handleClick() {
+    countBar++
+    console.log('clickBar')
+    update()
+  }
+
+  return <div onClick={handleClick}>Bar {countBar}</div>
+}
+
 
 const App = (
   <div>
     <div>Hello World🏅</div>
-    <Counter />
+    <Foo />
+    <Bar />
   </div>
 )
 

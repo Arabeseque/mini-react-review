@@ -87,7 +87,6 @@ function reconcileChildren(fiber, children) {
                 }
             }
             while (oldFiber) {
-                console.log('should delete', oldFiber)
                 fiberDeletions.push(oldFiber)
                 oldFiber = oldFiber.sibling
             }
@@ -109,17 +108,33 @@ function reconcileChildren(fiber, children) {
     })
 }
 
-function performUnitOfWork(fiber) {
-    const isFunctionComponent = fiber.type instanceof Function
-    if (!isFunctionComponent) {
-        if (!fiber.dom) {
-            const dom = createDom(fiber)
-            addProps(fiber.dom, fiber.props)
-        }
+function updateHostComponent(fiber) {
+    if (!fiber.dom) {
+        // 1. 创建 dom、挂载dom
+        const dom = (fiber.dom = createDom(fiber));
+
+        // 2. 设置 props
+        addProps(dom, fiber.props, {});
     }
 
-    const children = isFunctionComponent ? [fiber.type(fiber.props)] : fiber.props.children
+    const children = fiber.props.children;
+    reconcileChildren(fiber, children);
+}
+
+function updateFunctionComponent(fiber) {
+    wipFiber = fiber
+    const children = [fiber.type(fiber.props)]
     reconcileChildren(fiber, children)
+}
+
+function performUnitOfWork(fiber) {
+    console.log(fiber)
+    const isFunctionComponent = fiber.type instanceof Function
+    if (isFunctionComponent) {
+        updateFunctionComponent(fiber)
+    } else {
+        updateHostComponent(fiber)
+    }
 
     if (fiber.child) {
         return fiber.child
@@ -141,11 +156,18 @@ function performUnitOfWork(fiber) {
 let wipRoot = null
 let currentRoot = null
 let nextUnitOfWork = null
+let wipFiber = null
+let fiberDeletions = []
+
 function workLoop(deadline) {
     let shouldYield = false
     while (nextUnitOfWork && !shouldYield) {
         nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
         shouldYield = deadline.timeRemaining() < 1
+
+        if (wipRoot?.sibling?.type === nextUnitOfWork?.type) {
+            nextUnitOfWork = null
+        }
     }
     if (!nextUnitOfWork && wipRoot) {
         commitRoot()
@@ -156,8 +178,18 @@ function workLoop(deadline) {
 requestIdleCallback(workLoop)
 
 // updateProps
-let fiberDeletions = []
 function update() {
+    let currentFiber = wipFiber
+
+    return () => {
+        nextUnitOfWork = {
+            dom: currentFiber.dom,
+            type: currentFiber.type,
+            props: { ...currentFiber.props },
+            alternate: currentFiber
+        }
+        wipRoot = nextUnitOfWork
+    }
     nextUnitOfWork = {
         dom: currentRoot.dom,
         type: currentRoot.type,
