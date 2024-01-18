@@ -1,7 +1,7 @@
 import React from './core/React.js'
 import ReactDom from './core/ReactDom.js'
 
-let showBar = true
+let showBar = false
 function Counter() {
   const Foo = (
     <div>
@@ -19,9 +19,8 @@ function Counter() {
 
   return (
     <div>
-      <div>
-        {!showBar ? Bar : Foo}
-      </div>
+      <div>header</div>
+      {showBar && Bar}
       <button onClick={handleClick}>Click me😋</button>
     </div>
   )

@@ -3,7 +3,7 @@ function createElement(type, props, ...children) {
         type,
         props: {
             ...props,
-            children: children.map(child => typeof child === 'object' ? child : createTextElement(child))
+            children: children.map(child => (typeof child === 'number' || typeof child === 'string') ? createTextElement(child) : child)
         }
     }
 }
@@ -75,16 +75,17 @@ function reconcileChildren(fiber, children) {
 
 
         } else {
-            newFiber = {
-                type: child.type,
-                props: child.props,
-                sibling: null,
-                child: null,
-                parent: fiber,
-                dom: null,
-                effectTag: 'PLACEMENT',
+            if (child) {
+                newFiber = {
+                    type: child.type,
+                    props: child.props,
+                    sibling: null,
+                    child: null,
+                    parent: fiber,
+                    dom: null,
+                    effectTag: 'PLACEMENT',
+                }
             }
-
             while (oldFiber) {
                 console.log('should delete', oldFiber)
                 fiberDeletions.push(oldFiber)
@@ -96,12 +97,15 @@ function reconcileChildren(fiber, children) {
             oldFiber = oldFiber.sibling
         }
 
-        if (index === 0) {
-            fiber.child = newFiber
-        } else {
-            prevFiber.sibling = newFiber
+        if (newFiber) {
+            if (index === 0) {
+                fiber.child = newFiber
+            } else {
+                prevFiber.sibling = newFiber
+            }
+            prevFiber = newFiber
         }
-        prevFiber = newFiber
+
     })
 }
 
