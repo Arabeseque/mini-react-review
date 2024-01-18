@@ -72,6 +72,8 @@ function reconcileChildren(fiber, children) {
                 alternate: oldFiber,
                 effectTag: 'UPDATE'
             }
+
+
         } else {
             newFiber = {
                 type: child.type,
@@ -81,7 +83,12 @@ function reconcileChildren(fiber, children) {
                 parent: fiber,
                 dom: null,
                 effectTag: 'PLACEMENT',
-                alternate: null
+            }
+
+            while (oldFiber) {
+                console.log('should delete', oldFiber)
+                fiberDeletions.push(oldFiber)
+                oldFiber = oldFiber.sibling
             }
         }
 
@@ -145,6 +152,7 @@ function workLoop(deadline) {
 requestIdleCallback(workLoop)
 
 // updateProps
+let fiberDeletions = []
 function update() {
     nextUnitOfWork = {
         dom: currentRoot.dom,
@@ -157,9 +165,21 @@ function update() {
 
 // 统一上传
 function commitRoot() {
+    fiberDeletions.forEach(commitDeletion)
     commitWork(wipRoot.child)
     currentRoot = wipRoot
     wipRoot = null
+    fiberDeletions = []
+}
+
+function commitDeletion(fiber) {
+    let domParent = fiber.parent
+    while (!domParent.dom) {
+        domParent = domParent.parent
+    }
+    if (fiber.dom) {
+        domParent.dom.removeChild(fiber.dom)
+    }
 }
 
 function commitWork(fiber) {
@@ -167,7 +187,6 @@ function commitWork(fiber) {
         return
     }
 
-    console.log(fiber.effectTag, fiber)
     if (fiber.effectTag === 'PLACEMENT') {
         let domParent = fiber.parent
         while (!domParent.dom) {

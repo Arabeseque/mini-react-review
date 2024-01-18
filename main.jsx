@@ -3,8 +3,14 @@ import ReactDom from './core/ReactDom.js'
 
 let showBar = true
 function Counter() {
-  const Foo = <div>Foo</div>
-  const Bar = <p>Bar</p>
+  const Foo = (
+    <div>
+      <div>Foo</div>
+      <div>child1</div>
+      <div>child2</div>
+    </div>
+  )
+  const Bar = <div>Bar</div>
 
   function handleClick() {
     showBar = !showBar
@@ -14,7 +20,7 @@ function Counter() {
   return (
     <div>
       <div>
-        {showBar ? Bar : Foo}
+        {!showBar ? Bar : Foo}
       </div>
       <button onClick={handleClick}>Click me😋</button>
     </div>
