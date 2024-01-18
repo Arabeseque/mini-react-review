@@ -1,17 +1,21 @@
 import React from './core/React.js'
 import ReactDom from './core/ReactDom.js'
 
-let count = 0
-function Counter({ num }) {
+let showBar = true
+function Counter() {
+  const Foo = <div>Foo</div>
+  const Bar = <p>Bar</p>
+
   function handleClick() {
-    console.log('click')
-    count++
+    showBar = !showBar
     React.update()
   }
 
   return (
     <div>
-      Counter😁 {count}
+      <div>
+        {showBar ? Bar : Foo}
+      </div>
       <button onClick={handleClick}>Click me😋</button>
     </div>
   )
@@ -20,7 +24,7 @@ function Counter({ num }) {
 const App = (
   <div>
     <div>Hello World🏅</div>
-    <Counter num={count} />
+    <Counter />
   </div>
 )
 
