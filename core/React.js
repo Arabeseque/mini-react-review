@@ -122,13 +122,15 @@ function updateHostComponent(fiber) {
 }
 
 function updateFunctionComponent(fiber) {
+    hookIndex = 0
+    stateHooks = fiber.alternate?.hooks || []
+
     wipFiber = fiber
     const children = [fiber.type(fiber.props)]
     reconcileChildren(fiber, children)
 }
 
 function performUnitOfWork(fiber) {
-    console.log(fiber)
     const isFunctionComponent = fiber.type instanceof Function
     if (isFunctionComponent) {
         updateFunctionComponent(fiber)
@@ -190,13 +192,33 @@ function update() {
         }
         wipRoot = nextUnitOfWork
     }
-    nextUnitOfWork = {
-        dom: currentRoot.dom,
-        type: currentRoot.type,
-        props: { ...currentRoot.props },
-        alternate: currentRoot
+}
+
+let hookIndex
+let stateHooks
+function useState(initState) {
+    let currentFiber = wipFiber
+    const oldFiber = currentFiber.alternate?.stateHooks[hookIndex]
+    const hook = {
+        state: oldFiber ? oldFiber.state : initState,
     }
-    wipRoot = nextUnitOfWork
+    stateHooks[hookIndex] = hook
+    hookIndex++
+
+    currentFiber.stateHooks = stateHooks
+
+    const setState = (action) => {
+        console.log('setSate', hook.state)
+        hook.state = action(hook.state)
+
+        wipRoot = {
+            ...currentFiber,
+            alternate: currentFiber
+        }
+        nextUnitOfWork = wipRoot
+    }
+
+    return [hook.state, setState]
 }
 
 // 统一上传
@@ -243,6 +265,7 @@ function commitWork(fiber) {
 
 const React = {
     render,
+    useState,
     update,
     createElement
 }

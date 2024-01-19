@@ -2,38 +2,28 @@ import React from './core/React.js'
 import ReactDom from './core/ReactDom.js'
 
 
-let countFoo = 0
 function Foo() {
-  const update = React.update()
-
+  const [count, setCount] = React.useState(0)
+  const [bar, setBar] = React.useState('bar')
   function handleClick() {
-    countFoo++
-    console.log('clickFoo')
-    update()
+    setCount((c) => c + 1)
+    setBar((s) => s + 'bar')
   }
 
-  return <div onClick={handleClick}>Foo {countFoo}</div>
+  return (
+    <div>
+      <div>Foo</div>
+      <div>{count}</div>
+      <div>{bar}</div>
+      <button onClick={handleClick}>add</button>
+    </div>
+  )
 }
-
-let countBar = 0
-function Bar() {
-  const update = React.update()
-
-  function handleClick() {
-    countBar++
-    console.log('clickBar')
-    update()
-  }
-
-  return <div onClick={handleClick}>Bar {countBar}</div>
-}
-
 
 const App = (
   <div>
     <div>Hello World🏅</div>
     <Foo />
-    <Bar />
   </div>
 )
 
