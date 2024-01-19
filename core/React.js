@@ -198,10 +198,18 @@ let hookIndex
 let stateHooks
 function useState(initState) {
     let currentFiber = wipFiber
-    const oldFiber = currentFiber.alternate?.stateHooks[hookIndex]
+    const oldHook = currentFiber.alternate?.stateHooks[hookIndex]
     const hook = {
-        state: oldFiber ? oldFiber.state : initState,
+        state: oldHook ? oldHook.state : initState,
+        queue: oldHook ? oldHook.queue : []
     }
+
+    hook.queue.forEach(action => {
+        hook.state = action(hook.state)
+    })
+
+    hook.queue = []
+
     stateHooks[hookIndex] = hook
     hookIndex++
 
@@ -209,7 +217,7 @@ function useState(initState) {
 
     const setState = (action) => {
         console.log('setSate', hook.state)
-        hook.state = action(hook.state)
+        hook.queue.push(typeof action === 'function' ? action : () => action)
 
         wipRoot = {
             ...currentFiber,
