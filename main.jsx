@@ -10,6 +10,22 @@ function Foo() {
     setBar((s) => s + 'bar')
   }
 
+  React.useEffect(() => {
+    console.log("This useEffect should be called once.");
+
+    return () => {
+      console.log("clean up - should not be called");
+    };
+  }, []);
+
+  React.useEffect(() => {
+    console.log("This useEffect should be called when count changed.");
+
+    return () => {
+      console.log("clean up - should be called");
+    };
+  }, [count]);
+
   return (
     <div>
       <div>Foo</div>
