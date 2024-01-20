@@ -237,8 +237,56 @@ function commitRoot() {
     fiberDeletions.forEach(commitDeletion)
     commitWork(wipRoot.child)
     currentRoot = wipRoot
+    commitEffectHook()
     wipRoot = null
     fiberDeletions = []
+}
+
+function commitEffectHook() {
+    function run(fiber) {
+        if (!fiber) return;
+
+        const oldEffectHooks = fiber.alternate?.effectHooks;
+        const effectHooks = fiber?.effectHooks;
+
+        if (!fiber.alternate) {
+            effectHooks?.forEach((hook) => {
+                hook.cleanup = hook.callback();
+            });
+        } else {
+            effectHooks?.forEach((hook, index) => {
+                const oldDeps = oldEffectHooks[index]?.deps;
+                const deps = hook?.deps;
+
+                if (deps.length > 0) {
+                    deps?.forEach((dep, i) => {
+                        if (dep !== oldDeps[i]) {
+                            hook.cleanup = hook.callback();
+                        }
+                    });
+                }
+            });
+        }
+
+        run(fiber.child);
+        run(fiber.sibling);
+    }
+
+    function runCleanup(fiber) {
+        if (!fiber) return;
+
+        fiber.alternate?.effectHooks?.forEach((hook) => {
+            if (hook.deps.length > 0) {
+                hook.cleanup && hook.cleanup();
+            }
+        });
+
+        runCleanup(fiber.child);
+        runCleanup(fiber.sibling);
+    }
+
+    runCleanup(wipRoot);
+    run(wipRoot);
 }
 
 function commitDeletion(fiber) {
@@ -274,7 +322,20 @@ function commitWork(fiber) {
     commitWork(fiber.sibling)
 }
 
+let effectHooks;
+function useEffect(callback, deps) {
+    const effectHook = {
+        callback,
+        deps,
+        cleanup: null,
+    };
+    effectHooks.push(effectHook);
+
+    wipFiber.effectHooks = effectHooks;
+}
+
 const React = {
+    useEffect,
     render,
     useState,
     update,
